@@ -95,14 +95,14 @@
                 {% if thread.thauthor.backswih %}
                     <div class="post-night">
                         <div style="position: absolute; height: 100%; width: 100%; z-index: 98; background-color: black; border-radius: 6px; opacity: 0.45"></div>
-                        <div style="position: absolute; height: 100%; width: 100%; z-index: 97; background-image: url({{ thread.thauthor.userback }}); background-position: center center; background-size: cover; border-radius: 6px;"></div>
+                        <div style="position: absolute; height: 100%; width: 100%; z-index: 97; background-image: url({{ postlink.thauthor.userback }}); background-position: center center; background-size: cover; border-radius: 6px;"></div>
                         <div style="position: relative; z-index: 99">
-                            {% include 'common/doneitem.html' %}
+                            {% include 'common/detail_oneitem.html' %}
                         </div>
                     </div>
                 {% else %}
                     <div style="position: relative; z-index: 99">
-                        {% include 'common/doneitem.html' %}
+                        {% include 'common/detail_oneitem.html' %}
                     </div>
                 {% endif %}
             </div>

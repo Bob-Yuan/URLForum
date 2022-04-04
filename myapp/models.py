@@ -10,7 +10,6 @@ class User(models.Model):
     userback = models.CharField('封面', max_length=255, null=True)
     password = models.CharField('密码', max_length=255)
 
-    niminswh = models.BooleanField('匿名', default=False)
     backswih = models.BooleanField('封面', default=False)
 
     location = models.TextField('位置', null=True)
@@ -23,7 +22,8 @@ class User(models.Model):
 
     creatime = models.DateTimeField(auto_now_add=True, verbose_name='创建')
     urgender = models.CharField('性别', max_length=255, blank=True, null=True)
-    nickname = models.CharField('编号', max_length=128, unique=True, null=True)
+    user_sn = models.CharField('用户编号', max_length=128, unique=True, null=True)
+    username = models.CharField('用户名', max_length=128, unique=True, null=True)
 
     class Meta:
         ordering = ['-creatime']
@@ -88,8 +88,8 @@ class MThread(models.Model):
 
 class Category(models.Model):
     typesort = models.IntegerField('排序', default=0, db_index=True)
-    nickname = models.CharField('匿名', max_length=20, db_index=True)
-    typename = models.CharField('类别', max_length=20, db_index=True)
+    filetype = models.CharField('格式类别', max_length=20, db_index=True)
+    contenttype_1 = models.CharField('内容一级类别', max_length=20, db_index=True)
     creatime = models.DateTimeField(auto_now_add=True, verbose_name='创建')
 
     class Meta:
@@ -98,10 +98,10 @@ class Category(models.Model):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return self.typename
+        return self.contenttype_1
 
 
-class Thread(models.Model):
+class PostLink(models.Model):
     contents = models.TextField('正文')
     attachmt = models.CharField('附件', max_length=255, blank=True, null=True)
     videourl = models.CharField('视频', max_length=255, blank=True, null=True)
@@ -112,12 +112,17 @@ class Thread(models.Model):
 
     updatime = models.DateTimeField(auto_now=True, verbose_name='更新')
     creatime = models.DateTimeField(auto_now_add=True, verbose_name='创建')
-    thauthor = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='作者')
-    thontype = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='类别')
+    # thauthor = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='作者')
+    # thontype = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='类别')
+    Linkauthor = models.CharField("作者", max_length=128)
+    filetype = models.CharField('格式类别', max_length=20, db_index=True)
+    contenttype_1 = models.CharField('内容一级类别', max_length=20, db_index=True)
+    contenttype_2 = models.CharField('内容二级类别', max_length=20, db_index=True)
+    contenttype_3 = models.CharField('内容三级类别', max_length=20, db_index=True)
 
     class Meta:
         ordering = ['-updatime']
-        verbose_name = '线程'
+        verbose_name = '上传链接'
         verbose_name_plural = verbose_name
 
     def __str__(self):
@@ -135,7 +140,7 @@ class Comment(models.Model):
 
     creatime = models.DateTimeField(auto_now_add=True, verbose_name='创建')
     cmauthor = models.ForeignKey(User, verbose_name='作者', on_delete=models.CASCADE, )
-    cmthread = models.ForeignKey(Thread, verbose_name='线程', on_delete=models.CASCADE, )
+    cmthread = models.ForeignKey(PostLink, verbose_name='上传链接', on_delete=models.CASCADE, )
 
     class Meta:
         ordering = ['-creatime']
@@ -150,7 +155,7 @@ class GoodSystem(models.Model):
     creatime = models.DateTimeField(auto_now_add=True, verbose_name='创建')
 
     gooduser = models.ForeignKey(User, verbose_name='用户', on_delete=models.CASCADE, )
-    goodthed = models.ForeignKey(Thread, verbose_name='线程', on_delete=models.CASCADE, null=True)
+    goodthed = models.ForeignKey(PostLink, verbose_name='上传链接', on_delete=models.CASCADE, null=True)
     goodcomm = models.ForeignKey(Comment, verbose_name='评论', on_delete=models.CASCADE, null=True)
 
     class Meta:
@@ -197,7 +202,7 @@ class NotifySystem(models.Model):
     creatime = models.DateTimeField(auto_now_add=True, verbose_name='创建')
 
     replyhes = models.ForeignKey(User, verbose_name='他的', on_delete=models.CASCADE, )
-    replythd = models.ForeignKey(Thread, verbose_name='线程', on_delete=models.CASCADE, )
+    replythd = models.ForeignKey(PostLink, verbose_name='上传链接', on_delete=models.CASCADE, )
     replycom = models.ForeignKey(Comment, verbose_name='评论', on_delete=models.CASCADE, )
 
     class Meta:

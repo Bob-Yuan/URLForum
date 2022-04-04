@@ -63,7 +63,7 @@ class MThreadAdmin(admin.ModelAdmin):
 admin.site.register(User, UserAdmin)
 admin.site.register(Black, BlackAdmin)
 admin.site.register(Category, CategoryAdmin)
-admin.site.register(Thread, ThreadAdmin)
+admin.site.register(PostLink, ThreadAdmin)
 admin.site.register(Comment, CommentAdmin)
 admin.site.register(PointSystem, PointSystemAdmin)
 admin.site.register(NotifySystem, NotifySystemAdmin)

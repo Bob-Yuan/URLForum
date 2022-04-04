@@ -7,7 +7,7 @@
     {% endif %}
     {% if comment.parentcomment %}
         <span class="ml-1">
-                                        <a href="/thread/{{ thread.id }}#comment-id-{{ comment.parentcomment.id }}">
+                                        <a href="/post_link/{{ thread.id }}#comment-id-{{ comment.parentcomment.id }}">
                                             {% if comment.parentcomment.cmauthor.niminswh %}
                                                 @Anonymous
                                             {% else %}

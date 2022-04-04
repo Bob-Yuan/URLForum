@@ -138,15 +138,20 @@
 </div>
 <div class="post-state">
     <div class="post-state-btns"
-         data-type="1" data-id="{{ thread.id }}" onclick="good(this)">
+         data-type="1" data-id="{{ thread.id }}" onclick="like(this)">
         <i class="uil-thumbs-up"></i>
         <span><span class="likenumb-{{ thread.id }}">{{ thread.likenumb }}</span>点赞 </span>
+    </div>
+    <div class="post-state-btns"
+         data-type="1" data-id="{{ thread.id }}" onclick="dislike(this)">
+        <i class="uil-thumbs-down"></i>
+        <span><span class="dislikenumb-{{ thread.id }}">{{ thread.dislikenumb }}</span>踩 </span>
     </div>
     <div class="post-state-btns">
         <a href="#"><i class="uil-heart"></i>{{ thread.commnumb }}<span>评论</span></a>
     </div>
     <input style="width: 1px;border: 0" id="shareinpt-{{ thread.id }}" type="text"
-           value="/thread/{{ thread.id }}">
+           value="/post_link/{{ thread.id }}">
     <div class="post-state-btns" data-clipboard-action="copy"
          data-clipboard-target="#shareinpt-{{ thread.id }}"
          id="sharebtn"><i class="uil-share-alt"></i> <span>分享 </span></div>
@@ -183,7 +188,7 @@
                                     {% endif %}
                                     {% if comment.parentcomment %}
                                         <span class="ml-1">
-                                        <a href="/thread/{{ thread.id }}#comment-id-{{ comment.parentcomment.id }}">
+                                        <a href="/post_link/{{ thread.id }}#comment-id-{{ comment.parentcomment.id }}">
                                             {% if comment.parentcomment.cmauthor.niminswh %}
                                                 @Anonymous
                                             {% else %}
@@ -229,7 +234,7 @@
                                 {% endif %}
                                 {% if comment.parentcomment %}
                                     <span class="ml-1">
-                                        <a href="/thread/{{ thread.id }}#comment-id-{{ comment.parentcomment.id }}">
+                                        <a href="/post_link/{{ thread.id }}#comment-id-{{ comment.parentcomment.id }}">
                                             {% if comment.parentcomment.cmauthor.niminswh %}
                                                 @Anonymous
                                             {% else %}
@@ -263,7 +268,7 @@
                 {% endif %}
                 <div class="uk-text-small">
                     <a href="javascript:void(0);" class="text-danger mr-1" data-type="0"
-                       data-id="{{ comment.id }}" onclick="good(this)">
+                       data-id="{{ comment.id }}" onclick="like(this)">
                         <i class="uil-heart"></i>
                         <span class="likenumb">{{ comment.likenumb }}</span>喜欢 </a>
 
@@ -289,7 +294,7 @@
                     [Lv{{ comment.cmauthor.usrgrade }}]
                 </div>
             </div>
-            <a href="/thread/{{ thread.id }}#comment-id-{{ comment.id }}"
+            <a href="/post_link/{{ thread.id }}#comment-id-{{ comment.id }}"
                class="post-comment-opt"></a>
         </div>
     {% endfor %}

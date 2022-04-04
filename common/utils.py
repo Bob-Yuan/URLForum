@@ -143,7 +143,7 @@ def uploadtoserver(file, type=1):
     }
 
 
-def getdjangopage(request, objs, size=15, nickname=None):
+def getdjangopage(request, objs, size=15, user_sn=None):
     paginator = Paginator(objs, size, )
     if paginator.num_pages <= 1:
         objs = objs
@@ -197,7 +197,8 @@ def getdjangopage(request, objs, size=15, nickname=None):
             'left_has_more': left_has_more,
             'right_has_more': right_has_more
         }
-        if nickname: paginator['nickname'] = nickname
+        if user_sn:
+            paginator['nickname'] = user_sn
     return objs, paginator
 
 

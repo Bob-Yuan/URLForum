@@ -80,9 +80,9 @@ def statistic(request):
     renderdata = global_data(request)
     renderdata['curnav'] = 'statistic'
     renderdata['register_count'] = User.objects.all().count()
-    renderdata['thread_count'] = Thread.objects.all().count()
+    renderdata['postlink_count'] = PostLink.objects.all().count()
     renderdata['comment_count'] = Comment.objects.all().count()
-    renderdata['good_count'] = GoodSystem.objects.all().count()
+    renderdata['like_count'] = GoodSystem.objects.all().count()
     renderdata['category_count'] = Category.objects.all().count()
     return render(request, 'site/statistic.html', renderdata)
 
@@ -262,18 +262,20 @@ def about(request):
 def index(request):
     renderdata = global_data(request)
     renderdata['curnav'] = 'index'
-    nickname = request.GET.get('type', None)
+    filetype = request.GET.get('filetype', None)
+    contenttype = request.GET.get('contenttype', None)
+    user_sn = request.GET.get('user_sn', None)
 
     currentype = None
-    if nickname:
-        currentype = Category.objects.get(nickname=nickname)
-        threads = Thread.objects.filter(thontype=currentype).order_by('-updatime')
-    else:
-        threads = Thread.objects.all().order_by('-updatime')
+    if filetype == "article":
+        # currentype = Category.objects.get(filetype_name=filetype_name, contenttype_name_0=contenttype_name)
+        postlinks = PostLink.objects.filter(thontype=currentype).order_by('-updatime')
+    elif filetype == "video":
+        postlinks = PostLink.objects.all().order_by('-updatime')
 
-    threads = getthreads(request, renderdata['user'], threads, False)
-    threads, paginator = getdjangopage(request, threads, nickname=nickname)
-    renderdata['objs'] = threads
+    postlinks = get_postlinks(request, renderdata['user'], postlinks, False)
+    postlinks, paginator = getdjangopage(request, postlinks, user_sn=user_sn)
+    renderdata['objs'] = postlinks
     renderdata['paginator'] = paginator
     renderdata['currentype'] = currentype
     return render(request, 'index/index.html', renderdata)
@@ -285,9 +287,9 @@ def search(request):
         try:
             keyword = request.POST.get('keyword', '')
             renderdata["keyword"] = keyword
-            threads = Thread.objects.filter(contents__contains=keyword).order_by('-updatime')
-            threads = getthreads(request, renderdata['user'], threads, False)
-            renderdata['objs'] = threads
+            postlinks = PostLink.objects.filter(contents__contains=keyword).order_by('-updatime')
+            postlinks = get_postlinks(request, renderdata['user'], postlinks, False)
+            renderdata['objs'] = postlinks
             return render(request, 'index/search.html', renderdata)
         except Exception as e:
             raise Http404("search not exist")
@@ -346,21 +348,21 @@ def saveisread(id, user):
             item.save()
 
 
-def detail(request, threadid):
+def detail(request, postid):
     renderdata = global_data(request)
     renderdata['curnav'] = 'index'
 
     try:
-        thread = Thread.objects.get(id=threadid)
-    except Thread.DoesNotExist:
-        raise Http404("Thread does not exist")
+        postid = PostLink.objects.get(id=postid)
+    except PostLink.DoesNotExist:
+        raise Http404("Postid does not exist")
 
-    renderdata['thread'] = getthreads(request, renderdata['user'], [thread], False)[0]
+    renderdata['postid'] = get_postlinks(request, renderdata['user'], [postid], False)[0]
 
     if renderdata['user']:
-        saveisread(threadid, renderdata['user'])
+        saveisread(postid, renderdata['user'])
 
-    comments = Comment.objects.filter(cmthread=thread).order_by('creatime')
+    comments = Comment.objects.filter(cmthread=postid).order_by('creatime')
     comments = getcomments(renderdata['user'], comments)
     comments, paginator = getdjangopage(request, comments, size=30)
     renderdata['objs'] = comments
@@ -431,55 +433,55 @@ def getcomments(user, comments):
     return comments
 
 
-def getthreads(request, user, threads, getcomment=True):
-    for thread in threads:
+def get_postlinks(request, user, postlinks, getcomment=True):
+    for postlink in postlinks:
         if getcomment:
-            comments = Comment.objects.filter(cmthread=thread).order_by("creatime")
-            thread.commentCount = comments.count()
+            comments = Comment.objects.filter(cmthread=postlink).order_by("creatime")
+            postlink.commentCount = comments.count()
             comments = getcomments(user, comments[:3])
-            thread.comments = comments
+            postlink.comments = comments
 
-        if thread.thauthor.location:
-            thread.thauthor.location = json.loads(
-                thread.thauthor.location.replace("'", '"')
+        if postlink.thauthor.location:
+            postlink.thauthor.location = json.loads(
+                postlink.thauthor.location.replace("'", '"')
             )
             if user:
                 try:
-                    thread.thauthor.distance = getdistance(user, thread.thauthor)
+                    postlink.thauthor.distance = getdistance(user, postlink.thauthor)
                 except:
                     pass
 
-        if thread.attachmt:
-            if "gif" in thread.attachmt:
-                thread.gifpng = thread.attachmt.replace(".gif", ".png")
-                thread.gifpng_source = thread.attachmt
+        if postlink.attachmt:
+            if "gif" in postlink.attachmt:
+                postlink.gifpng = postlink.attachmt.replace(".gif", ".png")
+                postlink.gifpng_source = postlink.attachmt
             else:
-                a = thread.attachmt.split('.')[0]
-                b = thread.attachmt.split('.')[1]
-                thread.attachmt_source = a + '_source.' + b
-        if thread.videourl:
-            if "#sp#" in thread.videourl:
-                thread.imageurl = thread.videourl.split("#sp#", 1)[1]
-            if ".mp4" in thread.videourl:
-                thread.mp4video = thread.videourl.split("#sp#", 1)[0]
-            elif ".mp3" in thread.videourl:
-                thread.mp3url = thread.videourl.split("#sp#", 1)[0]
-            elif "player.bilibili.com" in thread.videourl:
-                thread.biliblivideo = thread.videourl
+                a = postlink.attachmt.split('.')[0]
+                b = postlink.attachmt.split('.')[1]
+                postlink.attachmt_source = a + '_source.' + b
+        if postlink.videourl:
+            if "#sp#" in postlink.videourl:
+                postlink.imageurl = postlink.videourl.split("#sp#", 1)[1]
+            if ".mp4" in postlink.videourl:
+                postlink.mp4video = postlink.videourl.split("#sp#", 1)[0]
+            elif ".mp3" in postlink.videourl:
+                postlink.mp3url = postlink.videourl.split("#sp#", 1)[0]
+            elif "player.bilibili.com" in postlink.videourl:
+                postlink.biliblivideo = postlink.videourl
             else:
-                thread.m3u8video = thread.videourl.split("#sp#", 1)[0]
-        if thread.contents.startswith("[markdown]") \
-                and thread.contents.endswith("[/markdown]"):
-            thread.contents = thread.contents.replace("#sp#", "!!!", 1)
-            temp = thread.contents.lstrip("[markdown]").rstrip("[/markdown]")
-            thread.title = temp.split("!!!", 1)[0]
-            thread.contents = markdown.markdown(
+                postlink.m3u8video = postlink.videourl.split("#sp#", 1)[0]
+        if postlink.contents.startswith("[markdown]") \
+                and postlink.contents.endswith("[/markdown]"):
+            postlink.contents = postlink.contents.replace("#sp#", "!!!", 1)
+            temp = postlink.contents.lstrip("[markdown]").rstrip("[/markdown]")
+            postlink.title = temp.split("!!!", 1)[0]
+            postlink.contents = markdown.markdown(
                 temp.split("!!!", 1)[1],
                 extensions=['markdown.extensions.extra', 'markdown.extensions.codehilite', ]
             )
-            thread.markdown = True
+            postlink.markdown = True
 
-    return threads
+    return postlinks
 
 
 def getdistance(user1, user2):
@@ -528,12 +530,12 @@ def profile(request):
                     or (other and renderdata['user']
                         and renderdata['user'].nickname == other):
                 renderdata['sameuser'] = True
-                threads = Thread.objects.filter(thauthor=renderdata['user']).all()
+                postlinks = PostLink.objects.filter(thauthor=renderdata['user']).all()
                 comments = Comment.objects.filter(cmauthor=renderdata['user']).all()
-                renderdata['thread_count'] = threads.count()
+                renderdata['postlink_count'] = postlinks.count()
                 renderdata['comment_count'] = comments.count()
-                threads = getthreads(request, renderdata['user'], threads[0:10], False)
-                renderdata['objs'] = threads
+                postlinks = get_postlinks(request, renderdata['user'], postlinks[0:10], False)
+                renderdata['objs'] = postlinks
                 return render(request, 'profile/index.html', renderdata)
 
             other = User.objects.filter(nickname=other)
@@ -544,7 +546,7 @@ def profile(request):
             if other.location:
                 other.location = json.loads(other.location.replace("'", '"'))
             renderdata['other'] = other
-            threads = Thread.objects.filter(thauthor=other).all()
+            postlinks = PostLink.objects.filter(thauthor=other).all()
             comments = Comment.objects.filter(cmauthor=other).all()
 
             if renderdata['user']:
@@ -553,10 +555,10 @@ def profile(request):
                 except:
                     pass
 
-            renderdata['thread_count'] = threads.count()
+            renderdata['postlinks_count'] = postlinks.count()
             renderdata['comment_count'] = comments.count()
-            threads = getthreads(request, renderdata['user'], threads[0:10], False)
-            renderdata['objs'] = threads
+            postlinks = get_postlinks(request, renderdata['user'], postlinks[0:10], False)
+            renderdata['objs'] = postlinks
 
             return render(request, 'profile/index.html', renderdata)
         except Exception as e:
@@ -738,7 +740,7 @@ def publish(request):
                 result_obj["msg"] = None
 
             thontype = Category.objects.get(nickname=nickname)
-            Thread.objects.create(
+            PostLink.objects.create(
                 contents=contents,
                 thauthor=thauthor,
                 attachmt=result_obj["msg"],
@@ -795,7 +797,8 @@ def invite(request):
     return HttpResponse(json.dumps({"code": 0, "msg": "错误的提交方式！"}))
 
 
-def good(request, type, id):
+# 点赞
+def like(request, type, id):
     user = request.session.get('user', None)
     if not user:
         return HttpResponse(json.dumps({"code": 0, "msg": "未登录！"}))
@@ -804,14 +807,47 @@ def good(request, type, id):
         try:
             user = User.objects.get(usermail=user)
             if type == 1:
-                thread = Thread.objects.get(id=id)
-                goods = GoodSystem.objects.filter(goodthed=thread)
+                postlink = PostLink.objects.get(id=id)
+                goods = GoodSystem.objects.filter(goodthed=postlink)
                 for good in goods:
                     if good.gooduser.usermail == user.usermail:
                         raise RuntimeError('您已经赞过了！')
-                thread.likenumb += 1
-                thread.save(update_fields=['likenumb'])
-                GoodSystem.objects.create(gooduser=user, goodthed=thread)
+                postlink.likenumb += 1
+                postlink.save(update_fields=['likenumb'])
+                GoodSystem.objects.create(gooduser=user, goodthed=postlink)
+            elif type == 0:
+                comment = Comment.objects.get(id=id)
+                goods = GoodSystem.objects.filter(goodcomm=comment)
+                for good in goods:
+                    if good.gooduser.usermail == user.usermail:
+                        raise RuntimeError('您已经赞过了！')
+                comment.likenumb += 1
+                comment.save()
+                GoodSystem.objects.create(gooduser=user, goodcomm=comment)
+            return HttpResponse(json.dumps({"code": 1, "msg": "点赞成功！"}))
+        except Exception as e:
+            return HttpResponse(json.dumps({"code": 0, "msg": str(e)}))
+    return HttpResponse(json.dumps({"code": 0, "msg": "错误的提交方式！"}))
+
+
+# 点踩
+def dislike(request, type, id):
+    user = request.session.get('user', None)
+    if not user:
+        return HttpResponse(json.dumps({"code": 0, "msg": "未登录！"}))
+
+    if request.method == 'GET':
+        try:
+            user = User.objects.get(usermail=user)
+            if type == 1:
+                postlink = PostLink.objects.get(id=id)
+                goods = GoodSystem.objects.filter(goodthed=postlink)
+                for good in goods:
+                    if good.gooduser.usermail == user.usermail:
+                        raise RuntimeError('您已经赞过了！')
+                postlink.likenumb += 1
+                postlink.save(update_fields=['likenumb'])
+                GoodSystem.objects.create(gooduser=user, goodthed=postlink)
             elif type == 0:
                 comment = Comment.objects.get(id=id)
                 goods = GoodSystem.objects.filter(goodcomm=comment)
@@ -1044,7 +1080,7 @@ def emailactive(request, nick, code):
         return render(request, "500.html", {"message": e, "title": "提示信息"})
 
 
-def comment(request, threadid):
+def comment(request, postlink_id):
     user = request.session.get('user', None)
     if user and request.method == 'POST':
         try:
@@ -1073,9 +1109,9 @@ def comment(request, threadid):
             #         raise RuntimeError(str(baidu_result))
 
             parent_comment = None
-            if parentid and parentid != threadid:
-                thread = Thread.objects.get(id=threadid)
-                comments = Comment.objects.filter(cmthread=thread)
+            if parentid and parentid != postlink_id:
+                postlink = PostLink.objects.get(id=postlink_id)
+                comments = Comment.objects.filter(cmthread=postlink)
                 parent_error = False
                 for comment in comments:
                     if int(parentid) == comment.id:
@@ -1097,34 +1133,34 @@ def comment(request, threadid):
             else:
                 result_obj["msg"] = None
 
-            thread = Thread.objects.get(id=threadid)
-            thread.commnumb += 1
+            postlink = PostLink.objects.get(id=postlink_id)
+            postlink.commnumb += 1
 
             if parent_comment:
                 newcomment = Comment.objects.create(
-                    contents=contents, cmauthor=thauthor, attachmt=result_obj["msg"], cmthread=thread,
-                    commfoor=thread.commnumb, parentid=int(parentid), niminswh=thauthor.niminswh)
+                    contents=contents, cmauthor=thauthor, attachmt=result_obj["msg"], cmthread=postlink,
+                    commfoor=postlink.commnumb, parentid=int(parentid), niminswh=thauthor.niminswh)
                 if parent_comment.cmauthor.usermail != thauthor.usermail:
                     if parent_comment.cmauthor.recvmail:
                         # 发送评论通知邮件
                         pass
                     NotifySystem.objects.create(
                         replymys=parent_comment.cmauthor.usermail, replyhes=thauthor, replycom=newcomment,
-                        replythd=thread, isreaded=False)
+                        replythd=postlink, isreaded=False)
             else:
                 newcomment = Comment.objects.create(
-                    contents=contents, cmauthor=thauthor, attachmt=result_obj["msg"], cmthread=thread,
-                    commfoor=thread.commnumb,
+                    contents=contents, cmauthor=thauthor, attachmt=result_obj["msg"], cmthread=postlink,
+                    commfoor=postlink.commnumb,
                     niminswh=thauthor.niminswh)
-                if thread.thauthor.usermail != thauthor.usermail:
-                    if thread.thauthor.recvmail:
+                if postlink.thauthor.usermail != thauthor.usermail:
+                    if postlink.thauthor.recvmail:
                         # 发送评论通知邮件
                         pass
                     NotifySystem.objects.create(
-                        replymys=thread.thauthor.usermail, replyhes=thauthor, replycom=newcomment, replythd=thread,
+                        replymys=postlink.thauthor.usermail, replyhes=thauthor, replycom=newcomment, replythd=postlink,
                         isreaded=False)
 
-            thread.save()
+            postlink.save()
 
             return postnew_point(thauthor, '评论奖励', '评论积分奖励')
         except Exception as e:
@@ -1179,10 +1215,10 @@ def is_markdown(obj):
 
 
 def forum_get_activelog():
-    threads = Thread.objects.all().order_by('-creatime')[:5]
-    for obj in threads:
+    postlinks = PostLink.objects.all().order_by('-creatime')[:5]
+    for obj in postlinks:
         obj = is_markdown(obj)
-        obj.active_type = "thread"
+        obj.active_type = "postlink"
     comments = Comment.objects.all().order_by('-creatime')[:5]
     for obj in comments:
         obj.cmthread = is_markdown(obj.cmthread)
@@ -1195,7 +1231,7 @@ def forum_get_activelog():
     markets = MThread.objects.all().order_by('-creatime')[:5]
     for obj in markets:
         obj.active_type = "market"
-    results = sorted(chain(threads, thgoods, comments, markets), key=attrgetter('creatime'), reverse=True)
+    results = sorted(chain(postlinks, thgoods, comments, markets), key=attrgetter('creatime'), reverse=True)
     return results
 
 

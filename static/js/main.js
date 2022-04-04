@@ -139,7 +139,47 @@ function good(e) {
     $.ajax({
         type: "GET",
         dataType: "json",
-        url: "/good/" + type + "/" + id,
+        url: "/like/" + type + "/" + id,
+        success: function (result) {
+            if (result["code"] === 0) {
+                toastr.error(result["msg"])
+            } else {
+                let likenumb = $(e).find(".likenumb-" + id).text();
+                $(".likenumb-" + id).text((parseInt(likenumb) + 1) + "");
+                toastr.info(result['msg']);
+            }
+        }, error: function () {
+        }
+    })
+}
+
+function like(e) {
+    var id = $(e).attr("data-id");
+    var type = $(e).attr("data-type");
+    $.ajax({
+        type: "GET",
+        dataType: "json",
+        url: "/like/" + type + "/" + id,
+        success: function (result) {
+            if (result["code"] === 0) {
+                toastr.error(result["msg"])
+            } else {
+                let likenumb = $(e).find(".likenumb-" + id).text();
+                $(".likenumb-" + id).text((parseInt(likenumb) + 1) + "");
+                toastr.info(result['msg']);
+            }
+        }, error: function () {
+        }
+    })
+}
+
+function dislike(e) {
+    var id = $(e).attr("data-id");
+    var type = $(e).attr("data-type");
+    $.ajax({
+        type: "GET",
+        dataType: "json",
+        url: "/dislike/" + type + "/" + id,
         success: function (result) {
             if (result["code"] === 0) {
                 toastr.error(result["msg"])

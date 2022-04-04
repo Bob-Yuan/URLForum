@@ -420,8 +420,8 @@
                     {% if objs|length == 0 %}
                         <p>此人很低调，还没有发表过动态哦！</p>
                     {% endif %}
-                    {% for thread in objs %}
-                        {% include 'index/thread.html' %}
+                    {% for link in objs %}
+                        {% include 'index/postlink.html' %}
                     {% endfor %}
                     {% if objs.count > 9 %}<p>仅显示前10条记录</p>{% endif %}
                 </div>
@@ -448,7 +448,7 @@
                                 <path fill="currentColor"
                                       d="M20 22H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1zm-1-2V4H5v16h14zM7 6h4v4H7V6zm0 6h10v2H7v-2zm0 4h10v2H7v-2zm6-9h4v2h-4V7z"></path>
                             </svg>
-                            <span id="user_post_count">{{ thread_count }}</span> 条动态，<span
+                            <span id="user_post_count">{{ postlinks_count }}</span> 条动态，<span
                                 id="user_post_count">{{ comment_count }}</span> 条评论
                         </li>
                         <li class="list-group-item">

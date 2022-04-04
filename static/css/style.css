@@ -5939,7 +5939,7 @@ header .opts_icon_link:hover {
     top: 0;
     left: 2rem;
     bottom: 0;
-    height: calc(100% - 18px)
+    height: calc(100%)
 }
 
 .main_sidebar .sidebar-header {

@@ -1,6 +1,6 @@
 {% load humanize %}
 {% if thread.markdown %}
-    <a href="/thread/{{ thread.id }}" class="blog-post">
+    <a href="/post_link/{{ thread.id }}" class="blog-post">
         <div class="blog-post-thumbnail">
             <div class="blog-post-thumbnail-inner">
                 {% if thread.attachmt %}
@@ -34,10 +34,10 @@
     </a>
 {% else %}
     <div class="post" style="position: relative">
-        {% if thread.thauthor.backswih and thread.thauthor.userback and not thread.attachmt %}
+        {% if postlink.thauthor.backswih and postlink.thauthor.userback and not thread.attachmt %}
             <div class="post-night">
                 <div style="position: absolute; height: 100%; width: 100%; z-index: 98; background-color: black; border-radius: 6px; opacity: 0.45"></div>
-                <div style="position: absolute; height: 100%; width: 100%; z-index: 97; background-image: url({{ thread.thauthor.userback }}); background-position: center center; background-size: cover; border-radius: 6px;"></div>
+                <div style="position: absolute; height: 100%; width: 100%; z-index: 97; background-image: url({{ postlink.thauthor.userback }}); background-position: center center; background-size: cover; border-radius: 6px;"></div>
                 <div style="position: relative; z-index: 99">
                     {% include 'common/oneitem.html' %}
                 </div>
